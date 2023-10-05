@@ -5,11 +5,10 @@ import abi from "./contracts/abi.json";
 export default function HomePage() {
   const [ethWallet, setEthWallet] = useState(undefined);
   const [account, setAccount] = useState(undefined);
-  const [atm, setATM] = useState(undefined);
-  const [balance, setBalance] = useState(undefined);
 
+  const [contract, setContract] = useState(undefined);
+  const [loggedIn, setLoggedIn] = useState(undefined)
   const contractAddress = "0x5B51d9369652f6C0352E27130Fe9D4F58adBaf48";
-  const atmABI = atm_abi.abi;
 
   const getWallet = async() => {
     if (window.ethereum) {
@@ -42,36 +41,36 @@ export default function HomePage() {
     handleAccount(accounts);
     
     // once wallet is set we can get a reference to our deployed contract
-    getATMContract();
+    getContract();
   };
 
-  const getATMContract = () => {
+  const getContract = () => {
     const provider = new ethers.providers.Web3Provider(ethWallet);
     const signer = provider.getSigner();
-    const atmContract = new ethers.Contract(contractAddress, atmABI, signer);
+    const website = new ethers.Contract(contractAddress, abi, signer);
  
-    setATM(atmContract);
+    setContract(website);
   }
 
-  const getBalance = async() => {
-    if (atm) {
-      setBalance((await atm.getBalance()).toNumber());
+  const getLoggedIn = async() => {
+    if (contract) {
+      setLoggedIn((await contract.loggedIn()));
     }
   }
 
-  const deposit = async() => {
-    if (atm) {
-      let tx = await atm.deposit(1);
+  const login = async() => {
+    if (contract) {
+      let tx = await contract.login();
       await tx.wait()
-      getBalance();
+      getLoggedIn();
     }
   }
-
-  const withdraw = async() => {
-    if (atm) {
-      let tx = await atm.withdraw(1);
+  const logout = async() => {
+    if (contract) {
+      let tx = await contract.logout(1);
       await tx.wait()
-      getBalance();
+      getLoggedIn();
+
     }
   }
 
@@ -86,16 +85,22 @@ export default function HomePage() {
       return <button onClick={connectAccount}>Please connect your Metamask wallet</button>
     }
 
-    if (balance == undefined) {
-      getBalance();
+    if (loggedIn == undefined) {
+      getLoggedIn();
     }
-
+    function logUI() {
+      return loggedIn ? <div> You have logged In</div>  : <div> click on log In to log In</div>
+    }
     return (
       <div>
         <p>Your Account: {account}</p>
-        <p>Your Balance: {balance}</p>
-        <button onClick={deposit}>Deposit 1 ETH</button>
-        <button onClick={withdraw}>Withdraw 1 ETH</button>
+        {
+          logUI()
+        }
+        <hr></hr>
+        <button onClick={login}>Log In</button>
+        <button onClick={logout}>Log Out</button>
+        <hr></hr>
       </div>
     )
   }
@@ -104,7 +109,7 @@ export default function HomePage() {
 
   return (
     <main className="container">
-      <header><h1>Welcome to the Metacrafters ATM!</h1></header>
+      <header><h1>Welcome to KingErics Website!</h1></header>
       {initUser()}
       <style jsx>{`
         .container {
